@@ -1,7 +1,5 @@
-
-
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.time.temporal.ChronoUnit;//These 2 imports are only for verifying the result. 
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,12 +15,14 @@ public class DateCalculator {
     }
 
     private static int getElapsedDays(String[] args) {
+        // Firstly check the input format. If format is not correct, return -1
         if (args.length != 2 || !isFormatValid(args[0]) || !isFormatValid(args[1])) {
             System.out.println("Incorrect input format. Input should be startDate, endDate in format yyyy-MM-dd");
             return -1;
         }
 
-        // Format already checked. try-catch not required to parse
+        // Get year, month, date from the String. Format already checked. try-catch not
+        // required to parse
         int year1 = Integer.parseInt(args[0].substring(0, 4));
         int month1 = Integer.parseInt(args[0].substring(5, 7));
         int date1 = Integer.parseInt(args[0].substring(8, 10));
@@ -30,12 +30,22 @@ public class DateCalculator {
         int month2 = Integer.parseInt(args[1].substring(5, 7));
         int date2 = Integer.parseInt(args[1].substring(8, 10));
 
+        // Validate the value. Input should be a valid date between 1901-01-01 and
+        // 2999-12-31 other wise return -1
         if (!isValueValid(year1, month1, date1) || !isValueValid(year2, month2, date2)) {
             System.out.println("Incorrect input value. Input should be a valid date between 1901-01-01 and 2999-12-31");
             return -1;
         }
+
+        // The idea is to get the elapsed days since 1901-01-01 by the date1 and date2.
+        // So the gap between elapsed1 and elapsed2 is the elapsed days between date1
+        // and date2
         int delta = Math.abs(daysAfterFlagDate(year1, month1, date1) - daysAfterFlagDate(year2, month2, date2));
-        int fullElapsed = delta > 0 ? delta - 1 : delta;
+
+        // As per requirement only whole days elapsed are counted so elapsed-1 is the
+        // expected result.
+        // Two same day or two connected days are considered 0 elapsed
+        int fullElapsed = delta - 1 > 0 ? delta - 1 : 0;
         return fullElapsed;
     }
 
@@ -61,17 +71,21 @@ public class DateCalculator {
     }
 
     private static boolean isLeap(int year) {
-        if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0))
-            return true;
-        else
-            return false;
+        return (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0));
     }
 
+    // The logic to get days after the flag date (1901-01-01) is: Days by whole
+    // years elapsed + days of the current year
     private static int daysAfterFlagDate(int year, int month, int date) {
         int yearsAfterFlag = year - flagYear;
+        // The logic to get whole year days after 1901-01-01 is:
+        // From 1901, Every full year count 365.
+        // Every 4 years add 1 more (leap year).
+        // Every 100 years minus 1(year is divisible by 100). From 2001,
+        // Every 400 hears add 1 more back (year is divisible by 400)
         int wholeYearDaysAfter = (yearsAfterFlag) * 365 + yearsAfterFlag / 4 - yearsAfterFlag / 100 + (yearsAfterFlag + 300) / 400;
         int daysOfTheYear = daysOfTheYear(year, month, date);
-        return wholeYearDaysAfter + daysOfTheYear - 1;
+        return wholeYearDaysAfter + daysOfTheYear - 1;// Need to minus 1
     }
 
     private static int daysOfTheYear(int year, int month, int date) {
@@ -157,7 +171,7 @@ public class DateCalculator {
     }
 
     @Test
-    public void getElapsedDays() {
+    public void testGetElapsedDays() {
         String[] testcase1 = { "1901-01-01", "1901-01-01" };
         Assert.assertEquals(0, getElapsedDays(testcase1));
 
